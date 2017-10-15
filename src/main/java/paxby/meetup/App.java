@@ -5,7 +5,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Configuration;
-import paxby.meetup.service.RsvpService;
+import paxby.meetup.service.AppService;
 
 import java.util.Arrays;
 
@@ -13,11 +13,11 @@ import java.util.Arrays;
 @Configuration
 public class App implements CommandLineRunner {
 
-    private final RsvpService rsvpService;
+    private final AppService appService;
 
     @Autowired
-    public App(RsvpService rsvpService) {
-        this.rsvpService = rsvpService;
+    public App(AppService appService) {
+        this.appService = appService;
     }
 
     public static void main(String[] args) {
@@ -26,7 +26,7 @@ public class App implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        rsvpService.rsvpAnyUpcomingEvents(Arrays.asList(args)); // TODO: Proper command line parsing
+        appService.run(Arrays.asList(args)); // TODO: Proper command line parsing
     }
 }
 

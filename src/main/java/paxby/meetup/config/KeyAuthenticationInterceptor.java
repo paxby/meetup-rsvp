@@ -27,7 +27,7 @@ public class KeyAuthenticationInterceptor implements ClientHttpRequestIntercepto
     @Value("${meetup.api.key}")
     private String apiKey;
 
-    private Set<String> authenticatedUris = new HashSet<>(Arrays.asList(new String[]{
+    private final Set<String> authenticatedUris = new HashSet<>(Arrays.asList(new String[]{
             "http://api.meetup.com/2/member/self"
     }));
 
@@ -42,7 +42,7 @@ public class KeyAuthenticationInterceptor implements ClientHttpRequestIntercepto
             super(request);
         }
 
-        private URI uriWithKey(URI uri) throws URISyntaxException {
+        private URI uriWithKey(URI uri) {
             return UriComponentsBuilder.fromUri(uri).queryParam("key", apiKey).build().toUri();
         }
 
@@ -55,18 +55,19 @@ public class KeyAuthenticationInterceptor implements ClientHttpRequestIntercepto
             return builder.build().toUri();
         }
 
-        @Override
-        public URI getURI() {
+        public URI getUriWithKey() {
             URI uri = getRequest().getURI();
             HttpMethod method = getRequest().getMethod();
 
             if (!method.equals(HttpMethod.GET) || authenticatedUris.contains(uri.toString())) {
-                try {
-                    uri = uriWithKey(uri);
-                } catch (URISyntaxException e) {
-                    e.printStackTrace();
-                }
+                return uriWithKey(uri);
             }
+            return uri;
+        }
+
+        @Override
+        public URI getURI() {
+            URI uri = getUriWithKey();
 
             LOGGER.debug("Request: {} {}", getRequest().getMethod().name(), maskKey(uri));
             return uri;

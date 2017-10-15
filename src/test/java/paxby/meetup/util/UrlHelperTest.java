@@ -7,9 +7,6 @@ import paxby.meetup.model.Group;
 
 import static org.junit.Assert.*;
 
-/**
- * Created by petter on 07/10/17.
- */
 public class UrlHelperTest {
 
     private UrlHelper urlHelper;

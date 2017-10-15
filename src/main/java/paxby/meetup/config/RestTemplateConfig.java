@@ -13,7 +13,7 @@ import java.util.Collections;
 @Configuration
 public class RestTemplateConfig {
 
-    private ClientHttpRequestInterceptor keyInterceptor;
+    private final ClientHttpRequestInterceptor keyInterceptor;
 
     @Autowired
     public RestTemplateConfig(KeyAuthenticationInterceptor interceptor) {

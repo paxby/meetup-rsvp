@@ -1,12 +1,10 @@
 package paxby.meetup.util;
 
-import org.springframework.stereotype.Component;
 import paxby.meetup.model.Event;
 
-@Component
 public class UrlHelper {
 
-    public static final String URL_PREFIX = "http://api.meetup.com";
+    private static final String URL_PREFIX = "http://api.meetup.com";
 
     public String eventsUrl(String groupName) {
         return String.format("%s/%s/events", URL_PREFIX, groupName);

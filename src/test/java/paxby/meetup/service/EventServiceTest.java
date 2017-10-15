@@ -1,7 +1,6 @@
 package paxby.meetup.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpMethod;
@@ -14,12 +13,13 @@ import paxby.meetup.model.Event;
 import paxby.meetup.model.Group;
 import paxby.meetup.model.Member;
 import paxby.meetup.model.Rsvp;
+import paxby.meetup.service.exception.RsvpException;
 import paxby.meetup.util.UrlHelper;
 
 import javax.xml.xpath.XPathExpressionException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
@@ -29,17 +29,13 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 public class EventServiceTest {
 
-    private static final String SOME_GROUP = "some_group";
-    private static final String SOME_EVENT = "some_event";
-    private static final String SOME_MEMBER = "some_member";
+    private static final Group SOME_GROUP = new Group("some_group");
+    private static final Event SOME_EVENT = new Event(1, "some_event", SOME_GROUP);
+    private static final Member SOME_MEMBER = new Member(1, "some_member");
 
     private final UrlHelper urlHelper = new UrlHelper();
 
-    private ObjectMapper objectMapper = Jackson2ObjectMapperBuilder.json().build();
-
     private EventService eventService;
-
-    private List<Event> mockEvents;
 
     private MockRestServiceServer mockServer;
 
@@ -47,45 +43,87 @@ public class EventServiceTest {
     public void setUp() throws JsonProcessingException {
         RestTemplate restTemplate = new RestTemplate();
         mockServer = MockRestServiceServer.createServer(restTemplate);
-        eventService = new EventService(restTemplate, urlHelper);
-
-        Event event = new Event(12345, SOME_EVENT, new Group(SOME_GROUP));
-        event.setStatus(Event.Status.UPCOMING);
-
-        mockEvents = Collections.singletonList(event);
+        eventService = new EventService(restTemplate);
     }
 
     @Test
-    public void getEvents() throws Exception {
-        mockServer.expect(requestTo(urlHelper.eventsUrl(SOME_GROUP)))
+    public void getUpcomingEventsShouldReturnOnlyUpcomingEvents() throws Exception {
+
+        Event pastEvent = new Event(1, "upcoming", SOME_GROUP);
+        pastEvent.setStatus(Event.Status.PAST);
+
+        Event upcomingEvent = new Event(2, "past", SOME_GROUP);
+        upcomingEvent.setStatus(Event.Status.UPCOMING);
+
+        List<Event> mockEvents = new ArrayList<>();
+        mockEvents.add(pastEvent);
+        mockEvents.add(upcomingEvent);
+
+        mockServer.expect(requestTo(urlHelper.eventsUrl(SOME_GROUP.getUrlName())))
                 .andExpect(method(HttpMethod.GET))
-                .andRespond(withSuccess(objectMapper.writeValueAsString(mockEvents), MediaType.APPLICATION_JSON));
+                .andRespond(withSuccess(json(mockEvents), MediaType.APPLICATION_JSON));
 
-        List<Event> events = eventService.getUpcomingEvents(SOME_GROUP);
+        List<Event> events = eventService.getUpcomingEvents(SOME_GROUP.getUrlName());
+        mockServer.verify();
 
-        IntStream.of(Integer.max(mockEvents.size(), events.size()) - 1).forEach(
-                n -> assertEquals(mockEvents.get(n).getId(), events.get(n).getId())
-        );
+        assertEquals(1, events.size());
+        assertEquals(2, events.get(0).getId());
     }
 
     @Test
-    public void rsvp() throws JsonProcessingException, XPathExpressionException {
+    public void getRsvpsShouldCallApiCorrectly() throws JsonProcessingException {
+        mockServer.expect(requestTo(urlHelper.rsvpUrl(SOME_EVENT)))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess()
+                        .body(json(Collections.singletonList(new Rsvp(SOME_MEMBER, Rsvp.Response.YES))))
+                        .contentType(MediaType.APPLICATION_JSON));
 
-        Event event = new Event(12345, SOME_EVENT, new Group(SOME_GROUP));
-        Member member = new Member(1, SOME_MEMBER);
+        eventService.getRsvps(SOME_EVENT);
+        mockServer.verify();
+    }
 
-        Rsvp expectedRsvp = new Rsvp(member, Rsvp.Response.YES);
-
-        mockServer.expect(requestTo(urlHelper.rsvpUrl(event)))
+    @Test
+    public void rsvpShouldSendCorrectContent() throws JsonProcessingException, XPathExpressionException {
+        mockServer.expect(requestTo(urlHelper.rsvpUrl(SOME_EVENT)))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(content().contentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .andExpect(content().string(containsString("agree_to_refund=false")))  // TODO: parse the form data?
                 .andExpect(content().string(containsString("opt_to_pay=false")))
                 .andExpect(content().string(containsString("agree_to_refund=false")))
                 .andExpect(content().string(containsString("response=yes")))
-                .andRespond(withStatus(HttpStatus.CREATED).body(objectMapper.writeValueAsString(expectedRsvp))
+                .andRespond(withStatus(HttpStatus.CREATED)
+                        .body(json(new Rsvp(SOME_MEMBER, Rsvp.Response.YES)))
                         .contentType(MediaType.APPLICATION_JSON_UTF8));
 
-        eventService.rsvp(event, member);
+        eventService.rsvp(SOME_EVENT, SOME_MEMBER);
+        mockServer.verify();
+    }
+
+    @Test(expected = RsvpException.class)
+    public void rsvpShouldThrowErrorIfMemberNotInResponse() throws JsonProcessingException {
+        mockServer.expect(requestTo(urlHelper.rsvpUrl(SOME_EVENT)))
+                .andExpect(method(HttpMethod.POST))
+                .andRespond(withStatus(HttpStatus.CREATED)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(json(new Rsvp(new Member(2, "other"), Rsvp.Response.YES))));
+
+        eventService.rsvp(SOME_EVENT, SOME_MEMBER);
+        mockServer.verify();
+    }
+
+    @Test(expected = RsvpException.class)
+    public void rsvpShouldThrowErrorIfMemberResponseIsNotYesOrWaitlist() throws JsonProcessingException {
+        mockServer.expect(requestTo(urlHelper.rsvpUrl(SOME_EVENT)))
+                .andExpect(method(HttpMethod.POST))
+                .andRespond(withStatus(HttpStatus.CREATED)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(json(new Rsvp(SOME_MEMBER, Rsvp.Response.NO))));
+
+        eventService.rsvp(SOME_EVENT, SOME_MEMBER);
+        mockServer.verify();
+    }
+
+    private String json(Object object) throws JsonProcessingException {
+        return Jackson2ObjectMapperBuilder.json().build().writeValueAsString(object);
     }
 }
