@@ -1,4 +1,4 @@
-package paxby.meetup.config;
+package paxby.meetup.rsvp.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,25 +14,27 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Configuration
 public class KeyAuthenticationInterceptor implements ClientHttpRequestInterceptor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KeyAuthenticationInterceptor.class);
 
+    private static final String QUERY_PARAM_KEY = "key";
+
     @Value("${meetup.api.key}")
     private String apiKey;
 
-    private final Set<String> authenticatedUris = new HashSet<>(Arrays.asList(new String[]{
+    private final Set<String> authenticatedUris = Stream.of(new String[] {
             "http://api.meetup.com/2/member/self"
-    }));
+    }).collect(Collectors.toSet());
 
     @Override
-    public ClientHttpResponse intercept(HttpRequest httpRequest, byte[] bytes, ClientHttpRequestExecution clientHttpRequestExecution) throws IOException {
+    public ClientHttpResponse intercept(HttpRequest httpRequest, byte[] bytes,
+                                        ClientHttpRequestExecution clientHttpRequestExecution) throws IOException {
         return clientHttpRequestExecution.execute(new MyHttpRequestWrapper(httpRequest), bytes);
     }
 
@@ -43,19 +45,19 @@ public class KeyAuthenticationInterceptor implements ClientHttpRequestIntercepto
         }
 
         private URI uriWithKey(URI uri) {
-            return UriComponentsBuilder.fromUri(uri).queryParam("key", apiKey).build().toUri();
+            return UriComponentsBuilder.fromUri(uri).queryParam(QUERY_PARAM_KEY, apiKey).build().toUri();
         }
 
         private URI maskKey(URI uri) {
             UriComponentsBuilder builder = UriComponentsBuilder.fromUri(uri);
 
-            if (builder.build().getQueryParams().containsKey("key")) {
-                builder.replaceQueryParam("key", "KEY");
+            if (builder.build().getQueryParams().containsKey(QUERY_PARAM_KEY)) {
+                builder.replaceQueryParam(QUERY_PARAM_KEY, "KEY");
             }
             return builder.build().toUri();
         }
 
-        public URI getUriWithKey() {
+        private URI getUriWithKey() {
             URI uri = getRequest().getURI();
             HttpMethod method = getRequest().getMethod();
 

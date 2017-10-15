@@ -1,7 +1,8 @@
-package paxby.meetup.util;
+package paxby.meetup.rsvp.util;
 
-import paxby.meetup.model.Event;
+import paxby.meetup.rsvp.model.Event;
 
+@SuppressWarnings("WeakerAccess")
 public class UrlHelper {
 
     private static final String URL_PREFIX = "http://api.meetup.com";

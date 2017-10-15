@@ -1,15 +1,19 @@
-package paxby.meetup.service;
+package paxby.meetup.rsvp.service;
 
 import org.junit.Test;
-import paxby.meetup.model.Event;
-import paxby.meetup.model.Group;
-import paxby.meetup.model.Member;
-import paxby.meetup.model.Rsvp;
+import paxby.meetup.rsvp.model.Event;
+import paxby.meetup.rsvp.model.Group;
+import paxby.meetup.rsvp.model.Member;
+import paxby.meetup.rsvp.model.Rsvp;
 
 import java.util.Collections;
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class AppServiceTest {
 

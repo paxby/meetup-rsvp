@@ -1,4 +1,4 @@
-package paxby.meetup.service;
+package paxby.meetup.rsvp.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -6,11 +6,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import paxby.meetup.model.Event;
-import paxby.meetup.model.Member;
-import paxby.meetup.model.Rsvp;
-import paxby.meetup.service.exception.RsvpException;
-import paxby.meetup.util.UrlHelper;
+import paxby.meetup.rsvp.model.Event;
+import paxby.meetup.rsvp.model.Member;
+import paxby.meetup.rsvp.model.Rsvp;
+import paxby.meetup.rsvp.service.exception.RsvpException;
+import paxby.meetup.rsvp.util.UrlHelper;
 
 import java.util.Arrays;
 import java.util.List;

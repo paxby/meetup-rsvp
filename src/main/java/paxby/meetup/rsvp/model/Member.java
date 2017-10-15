@@ -1,4 +1,4 @@
-package paxby.meetup.model;
+package paxby.meetup.rsvp.model;
 
 @SuppressWarnings("unused")
 public class Member {

@@ -1,17 +1,18 @@
-package paxby.meetup.service;
+package paxby.meetup.rsvp.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import paxby.meetup.model.Event;
-import paxby.meetup.model.Member;
-import paxby.meetup.model.Rsvp;
+import paxby.meetup.rsvp.model.Event;
+import paxby.meetup.rsvp.model.Member;
+import paxby.meetup.rsvp.model.Rsvp;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@SuppressWarnings("WeakerAccess")
 public class AppService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AppService.class);

@@ -1,11 +1,12 @@
-package paxby.meetup.util;
+package paxby.meetup.rsvp.util;
 
 import org.junit.Before;
 import org.junit.Test;
-import paxby.meetup.model.Event;
-import paxby.meetup.model.Group;
+import paxby.meetup.rsvp.model.Event;
+import paxby.meetup.rsvp.model.Group;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+
 
 public class UrlHelperTest {
 

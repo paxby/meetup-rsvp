@@ -1,4 +1,4 @@
-package paxby.meetup.config;
+package paxby.meetup.rsvp.config;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package paxby.meetup.service;
+package paxby.meetup.rsvp.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.Before;
@@ -9,21 +9,22 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
-import paxby.meetup.model.Event;
-import paxby.meetup.model.Group;
-import paxby.meetup.model.Member;
-import paxby.meetup.model.Rsvp;
-import paxby.meetup.service.exception.RsvpException;
-import paxby.meetup.util.UrlHelper;
+import paxby.meetup.rsvp.model.Event;
+import paxby.meetup.rsvp.model.Group;
+import paxby.meetup.rsvp.model.Member;
+import paxby.meetup.rsvp.model.Rsvp;
+import paxby.meetup.rsvp.service.exception.RsvpException;
+import paxby.meetup.rsvp.util.UrlHelper;
 
-import javax.xml.xpath.XPathExpressionException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
@@ -83,7 +84,7 @@ public class EventServiceTest {
     }
 
     @Test
-    public void rsvpShouldSendCorrectContent() throws JsonProcessingException, XPathExpressionException {
+    public void rsvpShouldSendCorrectContent() throws JsonProcessingException {
         mockServer.expect(requestTo(urlHelper.rsvpUrl(SOME_EVENT)))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(content().contentType(MediaType.APPLICATION_FORM_URLENCODED))
