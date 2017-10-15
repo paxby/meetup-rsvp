@@ -14,7 +14,6 @@ import org.springframework.http.client.support.HttpRequestWrapper;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,10 +26,8 @@ public class KeyInterceptor implements ClientHttpRequestInterceptor {
     @Value("${meetup.api.key}")
     private String apiKey;
 
-    private String[] blah;
-
     // TODO: Could this be done easier?
-    private Set<String> restrictedGet = new HashSet(Arrays.asList(new String[] {
+    private Set<String> restrictedGet = new HashSet(Arrays.asList(new String[]{
             "http://api.meetup.com/2/member/self",
     }));
 
@@ -52,7 +49,6 @@ public class KeyInterceptor implements ClientHttpRequestInterceptor {
 
         @Override
         public URI getURI() {
-
             URI uri = getRequest().getURI();
 
             if (restrictedGet.contains(uri.toString()) || getRequest().getMethod().equals(HttpMethod.POST)) {
@@ -62,7 +58,10 @@ public class KeyInterceptor implements ClientHttpRequestInterceptor {
                     e.printStackTrace();
                 }
             }
-            LOGGER.debug("Request: {} {}", getRequest().getMethod().name(), uri);
+
+            LOGGER.debug("Request: {} {}", getRequest().getMethod().name(),
+                    uri.toString().replaceAll("\\?key=.*", "?key={key}"));  // TODO: Make more generic
+
             return uri;
         }
     }

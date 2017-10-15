@@ -46,7 +46,11 @@ public class EventServiceTest {
         RestTemplate restTemplate = new RestTemplate();
         mockServer = MockRestServiceServer.createServer(restTemplate);
         eventService = new EventService(restTemplate, urlHelper);
-        mockEvents = Collections.singletonList(new Event(12345, SOME_EVENT, new Group(SOME_GROUP)));
+
+        Event event = new Event(12345, SOME_EVENT, new Group(SOME_GROUP));
+        event.setStatus(Event.Status.UPCOMING);
+
+        mockEvents = Collections.singletonList(event);
     }
 
     @Test
@@ -55,7 +59,7 @@ public class EventServiceTest {
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withSuccess(objectMapper.writeValueAsString(mockEvents), MediaType.APPLICATION_JSON));
 
-        List<Event> events = eventService.getEvents(SOME_GROUP);
+        List<Event> events = eventService.getUpcomingEvents(SOME_GROUP);
 
         IntStream.of(Integer.max(mockEvents.size(), events.size()) - 1).forEach(
                 n -> assertEquals(mockEvents.get(n).getId(), events.get(n).getId())

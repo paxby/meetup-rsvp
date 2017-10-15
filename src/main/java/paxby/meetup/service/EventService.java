@@ -1,9 +1,5 @@
 package paxby.meetup.service;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -17,11 +13,11 @@ import paxby.meetup.util.UrlHelper;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class EventService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventService.class);
 
     private final RestTemplate restTemplate;
 
@@ -33,8 +29,11 @@ public class EventService {
         this.urlHelper = urlHelper;
     }
 
-    public List<Event> getEvents(String name) {
-        return Arrays.asList(restTemplate.getForObject(urlHelper.eventsUrl(name), Event[].class));
+    public List<Event> getUpcomingEvents(String name) {
+        return Arrays.stream(restTemplate.getForObject(urlHelper.eventsUrl(name), Event[].class))
+                // API should only return upcoming events, but in case this changes
+                .filter(event -> event.getStatus() == Event.Status.UPCOMING)
+                .collect(Collectors.toList());
     }
 
     public List<Rsvp> getRsvps(Event event) {
@@ -45,10 +44,10 @@ public class EventService {
         return restTemplate.getForObject(urlHelper.memberUrl(), Member.class);
     }
 
-    public boolean hasRsvpd(Event event, Member member) {
-        return getRsvps(event).stream()
-                .map(r -> r.getMember().getId())
-                .anyMatch(x -> x.equals(member.getId()));
+    public Optional<Rsvp> getRsvp(List<Rsvp> rsvps, Member member) {
+        return rsvps.stream()
+                .filter(rsvp -> rsvp.getMember().getId() == member.getId())
+                .findFirst();
     }
 
     private HttpEntity<MultiValueMap<String, Object>> postRequestEntity() {
@@ -65,52 +64,21 @@ public class EventService {
         return new HttpEntity<>(map, headers);
     }
 
-    public void rsvp(Event event, Member member) throws JsonProcessingException {
-
-        // TODO: Should check eligibility first
-
+    public void rsvp(Event event, Member member) {
         ResponseEntity<Rsvp> response = restTemplate.postForEntity(urlHelper.rsvpUrl(event), postRequestEntity(), Rsvp.class);
 
-        if (response.getStatusCode() != HttpStatus.CREATED
-                || response.getBody().getMember().getId() != member.getId()
-                || (response.getBody().getResponse() != Rsvp.Response.YES && response.getBody().getResponse() != Rsvp.Response.WAITLIST)) {
-            throw new RuntimeException("RSVP failed"); // TODO: Add exception
+        if (response.getStatusCode() != HttpStatus.CREATED) {
+            throw new RsvpException(String.format("RSVP post request returned status %s (%s)", response.getStatusCodeValue(), response.getStatusCode().name()));
+        } else if (response.getBody().getMember().getId() != member.getId()) {
+            throw new RsvpException("RSVP post request did not return member list containing self");
+        } else if (response.getBody().getResponse() != Rsvp.Response.YES && response.getBody().getResponse() != Rsvp.Response.WAITLIST) {
+            throw new RsvpException(String.format("RSVP post returned %s, expected one of [YES, WAITLIST] ", response.getBody().getResponse()));
         }
     }
 
-    private static class RsvpPost {
-
-        @JsonProperty("agree_to_refund")
-        private boolean agreeToRefund = false;
-
-        private Integer guests = 0;
-
-        @JsonProperty("opt_to_pay")
-        private boolean optToPay = false;
-
-        @JsonProperty("pro_email_share_optin")
-        private boolean proEmailShareOptin = false;
-
-        private Rsvp.Response response = Rsvp.Response.YES;
-
-        public boolean isAgreeToRefund() {
-            return agreeToRefund;
-        }
-
-        public Integer getGuests() {
-            return guests;
-        }
-
-        public boolean isOptToPay() {
-            return optToPay;
-        }
-
-        public boolean isProEmailShareOptin() {
-            return proEmailShareOptin;
-        }
-
-        public Rsvp.Response getResponse() {
-            return response;
+    private class RsvpException extends RuntimeException {
+        private RsvpException(String message) {
+            super(message);
         }
     }
 }

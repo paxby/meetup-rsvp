@@ -14,7 +14,7 @@ public class Event {
 
     private String name;
 
-    private String status;
+    private Status status;
 
     private Instant time;
 
@@ -54,12 +54,16 @@ public class Event {
         this.name = name;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
     public void setTime(Instant time) {
         this.time = time;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
     }
 
     public void setJoin_mode(String join_mode) {
@@ -67,7 +71,21 @@ public class Event {
     }
 
     public String toString() {
-        return String.format("'%s' on %s: %s", name, time, status);
+        return String.format("'%s' on %s", name, time);
     }
 
+    public enum Status {
+        @JsonProperty("upcoming")
+        UPCOMING,
+        @JsonProperty("past")
+        PAST,
+        @JsonProperty("proposed")
+        PROPOSED,
+        @JsonProperty("suggested")
+        SUGGESTED,
+        @JsonProperty("cancelled")
+        CANCELLED,
+        @JsonProperty("draft")
+        DRAFT
+    }
 }
