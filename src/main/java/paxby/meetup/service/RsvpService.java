@@ -33,7 +33,7 @@ public class RsvpService {
             for (Event event : events) {
                 List<Rsvp> rsvps = eventService.getRsvps(event);
                 Optional<Rsvp> selfRsvp = eventService.getRsvp(rsvps, self);
-                LOGGER.info("Event: {} (rsvp: {})", event, selfRsvp.map(r -> r.getResponse().name()) .orElse("NONE"));
+                LOGGER.info("Event: {} (rsvp: {})", event, selfRsvp.map(r -> r.getResponse().name()).orElse("NONE"));
 
                 if (!selfRsvp.isPresent()) {
                     LOGGER.info("Sending rsvp for {} event {}", groupName, event);

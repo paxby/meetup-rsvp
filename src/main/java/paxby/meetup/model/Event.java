@@ -4,9 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.Instant;
 
+@SuppressWarnings("unused")
 public class Event {
-
-    private long created;
 
     private long id;
 
@@ -17,9 +16,6 @@ public class Event {
     private Status status;
 
     private Instant time;
-
-    @JsonProperty("join_mode")
-    private String joinMode;
 
     public Event() {
     }
@@ -36,10 +32,6 @@ public class Event {
 
     public void setGroup(Group group) {
         this.group = group;
-    }
-
-    public void setCreated(long created) {
-        this.created = created;
     }
 
     public long getId() {
@@ -64,10 +56,6 @@ public class Event {
 
     public void setStatus(Status status) {
         this.status = status;
-    }
-
-    public void setJoin_mode(String join_mode) {
-        this.joinMode = join_mode;
     }
 
     public String toString() {

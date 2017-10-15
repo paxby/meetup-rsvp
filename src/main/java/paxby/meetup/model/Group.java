@@ -2,6 +2,7 @@ package paxby.meetup.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@SuppressWarnings("unused")
 public class Group {
 
     private String name;

@@ -10,6 +10,7 @@ import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.support.HttpRequestWrapper;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URI;
@@ -19,16 +20,15 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Configuration
-public class KeyInterceptor implements ClientHttpRequestInterceptor {
+public class KeyAuthenticationInterceptor implements ClientHttpRequestInterceptor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(KeyInterceptor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(KeyAuthenticationInterceptor.class);
 
     @Value("${meetup.api.key}")
     private String apiKey;
 
-    // TODO: Could this be done easier?
-    private Set<String> restrictedGet = new HashSet(Arrays.asList(new String[]{
-            "http://api.meetup.com/2/member/self",
+    private Set<String> authenticatedUris = new HashSet<>(Arrays.asList(new String[]{
+            "http://api.meetup.com/2/member/self"
     }));
 
     @Override
@@ -43,15 +43,24 @@ public class KeyInterceptor implements ClientHttpRequestInterceptor {
         }
 
         private URI uriWithKey(URI uri) throws URISyntaxException {
-            // TODO: Could probably be done better
-            return new URI(String.format("%s?key=%s", uri.toString(), apiKey));
+            return UriComponentsBuilder.fromUri(uri).queryParam("key", apiKey).build().toUri();
+        }
+
+        private URI maskKey(URI uri) {
+            UriComponentsBuilder builder = UriComponentsBuilder.fromUri(uri);
+
+            if (builder.build().getQueryParams().containsKey("key")) {
+                builder.replaceQueryParam("key", "KEY");
+            }
+            return builder.build().toUri();
         }
 
         @Override
         public URI getURI() {
             URI uri = getRequest().getURI();
+            HttpMethod method = getRequest().getMethod();
 
-            if (restrictedGet.contains(uri.toString()) || getRequest().getMethod().equals(HttpMethod.POST)) {
+            if (!method.equals(HttpMethod.GET) || authenticatedUris.contains(uri.toString())) {
                 try {
                     uri = uriWithKey(uri);
                 } catch (URISyntaxException e) {
@@ -59,9 +68,7 @@ public class KeyInterceptor implements ClientHttpRequestInterceptor {
                 }
             }
 
-            LOGGER.debug("Request: {} {}", getRequest().getMethod().name(),
-                    uri.toString().replaceAll("\\?key=.*", "?key={key}"));  // TODO: Make more generic
-
+            LOGGER.debug("Request: {} {}", getRequest().getMethod().name(), maskKey(uri));
             return uri;
         }
     }

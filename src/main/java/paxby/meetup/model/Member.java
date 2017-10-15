@@ -1,5 +1,6 @@
 package paxby.meetup.model;
 
+@SuppressWarnings("unused")
 public class Member {
 
     private long id;

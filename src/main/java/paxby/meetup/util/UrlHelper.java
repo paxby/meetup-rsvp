@@ -1,7 +1,6 @@
 package paxby.meetup.util;
 
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import paxby.meetup.model.Event;
 
 @Component

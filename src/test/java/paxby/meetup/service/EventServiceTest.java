@@ -16,10 +16,12 @@ import paxby.meetup.model.Member;
 import paxby.meetup.model.Rsvp;
 import paxby.meetup.util.UrlHelper;
 
+import javax.xml.xpath.XPathExpressionException;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
@@ -67,7 +69,7 @@ public class EventServiceTest {
     }
 
     @Test
-    public void rsvp() throws JsonProcessingException {
+    public void rsvp() throws JsonProcessingException, XPathExpressionException {
 
         Event event = new Event(12345, SOME_EVENT, new Group(SOME_GROUP));
         Member member = new Member(1, SOME_MEMBER);
@@ -77,11 +79,12 @@ public class EventServiceTest {
         mockServer.expect(requestTo(urlHelper.rsvpUrl(event)))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(content().contentType(MediaType.APPLICATION_FORM_URLENCODED))
-                .andExpect(content().string("agree_to_refund=false&guests=0&opt_to_pay=false&response=yes"))
+                .andExpect(content().string(containsString("agree_to_refund=false")))  // TODO: parse the form data?
+                .andExpect(content().string(containsString("opt_to_pay=false")))
+                .andExpect(content().string(containsString("agree_to_refund=false")))
+                .andExpect(content().string(containsString("response=yes")))
                 .andRespond(withStatus(HttpStatus.CREATED).body(objectMapper.writeValueAsString(expectedRsvp))
                         .contentType(MediaType.APPLICATION_JSON_UTF8));
-
-        // TODO: Is the order of form params guaranteed?
 
         eventService.rsvp(event, member);
     }

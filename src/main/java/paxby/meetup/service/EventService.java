@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@SuppressWarnings("WeakerAccess")
 public class EventService {
 
     private final RestTemplate restTemplate;
@@ -50,22 +51,15 @@ public class EventService {
                 .findFirst();
     }
 
-    private HttpEntity<MultiValueMap<String, Object>> postRequestEntity() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        // TODO: Create builder ?
-        MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-        map.add("agree_to_refund", "false");
-        map.add("guests", "0");
-        map.add("opt_to_pay", "false");
-        map.add("response", "yes");
-
-        return new HttpEntity<>(map, headers);
-    }
-
     public void rsvp(Event event, Member member) {
-        ResponseEntity<Rsvp> response = restTemplate.postForEntity(urlHelper.rsvpUrl(event), postRequestEntity(), Rsvp.class);
+        HttpEntity request = new PostRequestHttpEntityBuilder()
+                .add("agree_to_refund", "false")
+                .add("guests", 0)
+                .add("opt_to_pay", false)
+                .add("response", "yes")
+                .build();
+
+        ResponseEntity<Rsvp> response = restTemplate.postForEntity(urlHelper.rsvpUrl(event), request, Rsvp.class);
 
         if (response.getStatusCode() != HttpStatus.CREATED) {
             throw new RsvpException(String.format("RSVP post request returned status %s (%s)", response.getStatusCodeValue(), response.getStatusCode().name()));
@@ -79,6 +73,21 @@ public class EventService {
     private class RsvpException extends RuntimeException {
         private RsvpException(String message) {
             super(message);
+        }
+    }
+
+    private class PostRequestHttpEntityBuilder {
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+
+        PostRequestHttpEntityBuilder add(String key, Object value) {
+            map.add(key, value.toString());
+            return this;
+        }
+
+        HttpEntity build() {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            return new HttpEntity<>(map, headers);
         }
     }
 }

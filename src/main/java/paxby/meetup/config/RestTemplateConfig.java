@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
@@ -12,10 +13,12 @@ import java.util.Collections;
 @Configuration
 public class RestTemplateConfig {
 
-    // TODO: Can Spring create this bean?
+    private ClientHttpRequestInterceptor keyInterceptor;
 
     @Autowired
-    private KeyInterceptor keyInterceptor;
+    public RestTemplateConfig(KeyAuthenticationInterceptor interceptor) {
+        this.keyInterceptor = interceptor;
+    }
 
     @Bean
     RestTemplate restTemplateBean() {
