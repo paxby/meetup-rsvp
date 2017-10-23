@@ -29,7 +29,7 @@ public class KeyAuthenticationInterceptor implements ClientHttpRequestIntercepto
     private String apiKey;
 
     private final Set<String> authenticatedUris = Stream.of(new String[] {
-            "http://api.meetup.com/2/member/self"
+            "http://api.meetup.com/members/self"
     }).collect(Collectors.toSet());
 
     @Override

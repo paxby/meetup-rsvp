@@ -20,6 +20,6 @@ public class UrlHelper {
     }
 
     public String memberUrl() {
-        return String.format("%s/2/member/self", URL_PREFIX);
+        return String.format("%s/members/self", URL_PREFIX);
     }
 }
