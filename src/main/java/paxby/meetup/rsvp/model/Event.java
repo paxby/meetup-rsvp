@@ -17,6 +17,12 @@ public class Event {
 
     private Instant time;
 
+    @JsonProperty("yes_rsvp_count")
+    private long yesRsvpCount;
+
+    @JsonProperty("rsvp_limit")
+    private long rsvpLimit;
+
     public Event() {
     }
 
@@ -24,6 +30,22 @@ public class Event {
         this.id = id;
         this.name = name;
         this.group = group;
+    }
+
+    public long getYesRsvpCount() {
+        return yesRsvpCount;
+    }
+
+    public void setYesRsvpCount(long yesRsvpCount) {
+        this.yesRsvpCount = yesRsvpCount;
+    }
+
+    public long getRsvpLimit() {
+        return rsvpLimit;
+    }
+
+    public void setRsvpLimit(long rsvpLimit) {
+        this.rsvpLimit = rsvpLimit;
     }
 
     public Group getGroup() {

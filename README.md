@@ -23,6 +23,14 @@ Then...
 java -jar <jar-file> SomePopularMeetup [ OtherAmazingMeetup ... ]
 ```
 
+## Options
+
+The following environment variables can be set:
+
+##### MEETUP_WAITLIST_ONLY
+
+Set this variable to true if you only want to RSVP if this places you in the waitlist (i.e. yesRsvpCount >= rsvpLimit)
+
 ## Finally
 
 Please do respect others and don't abuse the API!
