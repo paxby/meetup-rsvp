@@ -26,8 +26,9 @@ public class AppServiceTest {
 
     private final AppService appService = new AppService(eventService, config);
 
-    private final Event SOME_EVENT = new Event(1, "some_event", new Group("some_group"));
     private final Member SOME_MEMBER = new Member();
+    private final Group SOME_GROUP = new Group("some_group");
+    private final Event SOME_EVENT = new Event(1, "some_event", SOME_GROUP);
 
     @Before
     public void setUp() {
@@ -88,5 +89,20 @@ public class AppServiceTest {
         appService.processEvent(SOME_EVENT, SOME_MEMBER);
 
         verify(eventService, never()).rsvp(SOME_EVENT, SOME_MEMBER);
+    }
+
+    @Test
+    public void processEventShouldNotRsvpIfEventNotOpenForRsvp() {
+
+        Event event = mock(Event.class);
+        when(event.getGroup()).thenReturn(SOME_GROUP);
+
+        when(event.rsvpsAreOpen(any())).thenReturn(false);
+        appService.processEvent(event, SOME_MEMBER);
+        verify(eventService, never()).rsvp(event, SOME_MEMBER);
+
+        when(event.rsvpsAreOpen(any())).thenReturn(true);
+        appService.processEvent(event, SOME_MEMBER);
+        verify(eventService).rsvp(event, SOME_MEMBER);
     }
 }

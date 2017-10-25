@@ -9,6 +9,8 @@ import paxby.meetup.rsvp.model.Event;
 import paxby.meetup.rsvp.model.Member;
 import paxby.meetup.rsvp.model.Rsvp;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +23,8 @@ public class AppService {
     private final EventService eventService;
 
     private final AppConfig config;
+
+    private final Clock clock = Clock.systemUTC();
 
     @Autowired
     public AppService(EventService eventService, AppConfig appConfig) {
@@ -43,14 +47,21 @@ public class AppService {
         List<Rsvp> rsvps = eventService.getRsvps(event);
         Optional<Rsvp> selfRsvp = eventService.getRsvp(rsvps, member);
 
-        LOGGER.info("Event: {} (rsvpLimit: {}, yesCount: {}, rsvp: {})", event, event.getRsvpLimit(),
-                event.getYesRsvpCount(), selfRsvp.map(r -> r.getResponse().name()).orElse("NONE"));
+        Instant now = clock.instant();
+
+        LOGGER.info("Event: {} (rsvp: {}, rsvpsOpen: {}, rsvpLimit: {}, yesCount: {})",
+                event,
+                selfRsvp.map(r -> r.getResponse().name()).orElse("NONE"),
+                event.rsvpsAreOpen(now),
+                event.getRsvpLimit(), event.getYesRsvpCount());
 
         if (!selfRsvp.isPresent()) {
-            if (!config.isJoinWaitListOnly() ||
-                    (event.getRsvpLimit() > 0 && event.getYesRsvpCount() >= event.getRsvpLimit())) {
-                LOGGER.info("Sending rsvp for {} event {}", event.getGroup().getName(), event);
-                eventService.rsvp(event, member);
+            if (event.rsvpsAreOpen(now)) {
+                if (!config.isJoinWaitListOnly() ||
+                        (event.getRsvpLimit() > 0 && event.getYesRsvpCount() >= event.getRsvpLimit())) {
+                    LOGGER.info("Sending rsvp for {} event {}", event.getGroup().getName(), event);
+                    eventService.rsvp(event, member);
+                }
             }
         }
     }

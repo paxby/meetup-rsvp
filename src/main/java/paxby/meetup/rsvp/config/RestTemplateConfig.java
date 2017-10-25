@@ -21,7 +21,7 @@ public class RestTemplateConfig {
     }
 
     @Bean
-    RestTemplate restTemplateBean() {
+    public RestTemplate restTemplateBean() {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.getMessageConverters().forEach(x -> {
                     if (x instanceof MappingJackson2HttpMessageConverter) {
