@@ -28,7 +28,7 @@ public class AppServiceTest {
 
     private final Member SOME_MEMBER = new Member();
     private final Group SOME_GROUP = new Group("some_group");
-    private final Event SOME_EVENT = new Event(1, "some_event", SOME_GROUP);
+    private final Event SOME_EVENT = new Event("1", "some_event", SOME_GROUP);
 
     @Before
     public void setUp() {

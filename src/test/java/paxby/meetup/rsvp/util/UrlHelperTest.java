@@ -24,13 +24,13 @@ public class UrlHelperTest {
 
     @Test
     public void eventUrl() throws Exception {
-        Event event = new Event(1, "some_event", new Group("some_group"));
+        Event event = new Event("1", "some_event", new Group("some_group"));
         assertEquals("http://api.meetup.com/some_group/events/1", urlHelper.eventUrl(event));
     }
 
     @Test
     public void rsvpUrl() throws Exception {
-        Event event = new Event(1, "some_event", new Group("some_group"));
+        Event event = new Event("1", "some_event", new Group("some_group"));
         assertEquals("http://api.meetup.com/some_group/events/1/rsvps", urlHelper.rsvpUrl(event));
     }
 }

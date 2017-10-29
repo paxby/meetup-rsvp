@@ -31,7 +31,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 public class EventServiceTest {
 
     private static final Group SOME_GROUP = new Group("some_group");
-    private static final Event SOME_EVENT = new Event(1, "some_event", SOME_GROUP);
+    private static final Event SOME_EVENT = new Event("1", "some_event", SOME_GROUP);
     private static final Member SOME_MEMBER = new Member(1, "some_member");
 
     private final UrlHelper urlHelper = new UrlHelper();
@@ -50,10 +50,10 @@ public class EventServiceTest {
     @Test
     public void getUpcomingEventsShouldReturnOnlyUpcomingEvents() throws Exception {
 
-        Event pastEvent = new Event(1, "upcoming", SOME_GROUP);
+        Event pastEvent = new Event("past", "past", SOME_GROUP);
         pastEvent.setStatus(Event.Status.PAST);
 
-        Event upcomingEvent = new Event(2, "past", SOME_GROUP);
+        Event upcomingEvent = new Event("upcoming", "upcoming", SOME_GROUP);
         upcomingEvent.setStatus(Event.Status.UPCOMING);
 
         List<Event> mockEvents = new ArrayList<>();
@@ -68,7 +68,7 @@ public class EventServiceTest {
         mockServer.verify();
 
         assertEquals(1, events.size());
-        assertEquals(2, events.get(0).getId());
+        assertEquals("upcoming", events.get(0).getId());
     }
 
     @Test

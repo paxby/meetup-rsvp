@@ -8,7 +8,7 @@ import java.time.Instant;
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class Event {
 
-    private long id;
+    private String id;
 
     private Group group;
 
@@ -43,7 +43,7 @@ public class Event {
         return true;
     }
 
-    public Event(long id, String name, Group group) {
+    public Event(String id, String name, Group group) {
         this.id = id;
         this.name = name;
         this.group = group;
@@ -105,11 +105,11 @@ public class Event {
         this.group = group;
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
